@@ -32,8 +32,9 @@ class TestLoginUnittest(unittest.TestCase):
     def test_login_page_loads(self):
         logger.info("Verifying login page loads correctly")
         self.login_page.go_to_login()
-        self.assertTrue(
-            self.driver.current_url.__contains__("route=account/login"),
+        self.assertIn(
+            "route=account/login",
+            self.driver.current_url,
             "Login page did not load as expected",
         )
 

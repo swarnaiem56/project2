@@ -1,5 +1,4 @@
 from selenium.webdriver.common.by import By
-from selenium.webdriver.support import expected_conditions as EC
 
 from pages.base_page import BasePage
 from utils.config_reader import ConfigReader
@@ -12,11 +11,19 @@ class CartPage(BasePage):
     # etc.), inflating the count. Scoped instead to rows that actually
     # contain a quantity input, which only genuine product rows have.
     CART_ITEM_ROWS = (By.XPATH, "//tr[.//input[starts-with(@name,'quantity[')]]")
+
+    # Restricted to the "text-left" column specifically (the name column) —
+    # a bare href-pattern match also catches the thumbnail image's <a> tag
+    # in the "text-center" column, which has no text.
     CART_ITEM_NAME = (By.CSS_SELECTOR, "td.text-left a[href*='route=product/product']")
+
+    # Confirmed via "View Page Source" on the live cart page. Real markup:
+    #   <input type="text" name="quantity[390986]" value="1" ... />
+    #   <button title="Remove" onclick="cart.remove('390986');" ...>...
     QUANTITY_INPUT = (By.CSS_SELECTOR, "input[name^='quantity[']")
-    UPDATE_BUTTON = (By.CSS_SELECTOR, "button[title='Update']")
     REMOVE_BUTTON = (By.CSS_SELECTOR, "button[title='Remove']")
     SUCCESS_ALERT = (By.CSS_SELECTOR, "div.alert-success")
+
     CART_TOTAL = (By.CSS_SELECTOR, "tr.text-right td:last-child")
     EMPTY_CART_MESSAGE = (By.CSS_SELECTOR, "#content p")
 
@@ -30,12 +37,8 @@ class CartPage(BasePage):
         return self.get_text(self.CART_ITEM_NAME)
 
     def get_first_item_quantity(self) -> str:
+        """Quantity lives in the input's value attribute, not visible text."""
         return self.get_attribute(self.QUANTITY_INPUT, "value")
-
-    def update_quantity(self, quantity: str):
-        self.type_text(self.QUANTITY_INPUT, quantity)
-        self.click(self.UPDATE_BUTTON)
-        self.wait.until(EC.visibility_of_element_located(self.SUCCESS_ALERT))
 
     def is_cart_empty(self) -> bool:
         return "empty" in self.get_text(self.EMPTY_CART_MESSAGE).lower()

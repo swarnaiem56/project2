@@ -12,14 +12,11 @@ class LoginPage(BasePage):
     PASSWORD_INPUT = (By.ID, "input-password")
     LOGIN_BUTTON = (By.CSS_SELECTOR, "input[value='Login']")
     LOGIN_ERROR_ALERT = (By.CSS_SELECTOR, "div.alert-danger")
-    # NOTE: "#content h2" alone is NOT a reliable success indicator — OpenCart
-    # renders an <h2> on BOTH the login page ("Account Login") and the
-    # post-login account page ("My Account"). Using is_displayed() on that
-    # generic selector returns True regardless of whether login actually
-    # succeeded, which caused a false-positive test earlier in this project.
-    # We instead check the URL, since a successful login redirects to a
-    # distinct route (account/account) that the login page itself never uses.
-    ACCOUNT_PAGE_HEADING = (By.CSS_SELECTOR, "#content h2")
+    # A successful login redirects to a distinct URL (account/account).
+    # I originally checked for an <h2> heading instead, but OpenCart renders
+    # an <h2> on BOTH the login page ("Account Login") AND the post-login
+    # account page ("My Account") — so that check returned True even with
+    # wrong credentials. Checking the URL fixed the false positive.
     LOGGED_IN_URL_MARKER = "route=account/account"
 
     def go_to_login(self):

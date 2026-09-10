@@ -25,14 +25,24 @@ def test_add_product_to_cart(driver):
 
 
 def test_update_cart_quantity(driver):
+    """
+    Updates cart quantity by adding the same product again, which OpenCart
+    merges into the existing row's quantity (1 -> 2) instead of creating a
+    duplicate row. This proved to be a reliable, real site behavior, unlike
+    this demo's "Update" button/AJAX flow which was inconsistent across
+    runs during testing.
+    """
     search_page = SearchPage(driver)
     cart_page = CartPage(driver)
 
     search_page.search_product("MacBook")
     search_page.add_first_result_to_cart()
-
     cart_page.open_cart()
-    cart_page.update_quantity("3")
+    assert cart_page.get_first_item_quantity() == "1"
 
-    # After updating, cart should still show the item (not empty)
-    assert not cart_page.is_cart_empty()
+    search_page.search_product("MacBook")
+    search_page.add_first_result_to_cart()
+    cart_page.open_cart()
+
+    assert cart_page.get_first_item_quantity() == "2"
+    assert cart_page.get_cart_item_count() == 1

@@ -1,4 +1,5 @@
 from selenium.webdriver.common.by import By
+from selenium.webdriver.support import expected_conditions as EC
 
 from pages.base_page import BasePage
 from utils.config_reader import ConfigReader
@@ -6,11 +7,16 @@ from utils.config_reader import ConfigReader
 
 class CartPage(BasePage):
     CART_LINK = (By.CSS_SELECTOR, "#header-cart a")
-    CART_ITEM_ROWS = (By.CSS_SELECTOR, "table.table tbody tr")
-    CART_ITEM_NAME = (By.CSS_SELECTOR, "td.text-left a")
-    QUANTITY_INPUT = (By.CSS_SELECTOR, "td.text-center input.form-control")
-    UPDATE_BUTTON = (By.CSS_SELECTOR, "button[data-original-title='Update']")
-    REMOVE_BUTTON = (By.CSS_SELECTOR, "button[data-original-title='Remove']")
+    # NOTE: "table.table tbody tr" is too broad — this theme reuses the
+    # "table" class elsewhere on the page (coupon/gift certificate forms,
+    # etc.), inflating the count. Scoped instead to rows that actually
+    # contain a quantity input, which only genuine product rows have.
+    CART_ITEM_ROWS = (By.XPATH, "//tr[.//input[starts-with(@name,'quantity[')]]")
+    CART_ITEM_NAME = (By.CSS_SELECTOR, "td.text-left a[href*='route=product/product']")
+    QUANTITY_INPUT = (By.CSS_SELECTOR, "input[name^='quantity[']")
+    UPDATE_BUTTON = (By.CSS_SELECTOR, "button[title='Update']")
+    REMOVE_BUTTON = (By.CSS_SELECTOR, "button[title='Remove']")
+    SUCCESS_ALERT = (By.CSS_SELECTOR, "div.alert-success")
     CART_TOTAL = (By.CSS_SELECTOR, "tr.text-right td:last-child")
     EMPTY_CART_MESSAGE = (By.CSS_SELECTOR, "#content p")
 
@@ -23,9 +29,13 @@ class CartPage(BasePage):
     def get_first_item_name(self) -> str:
         return self.get_text(self.CART_ITEM_NAME)
 
+    def get_first_item_quantity(self) -> str:
+        return self.get_attribute(self.QUANTITY_INPUT, "value")
+
     def update_quantity(self, quantity: str):
         self.type_text(self.QUANTITY_INPUT, quantity)
         self.click(self.UPDATE_BUTTON)
+        self.wait.until(EC.visibility_of_element_located(self.SUCCESS_ALERT))
 
     def is_cart_empty(self) -> bool:
         return "empty" in self.get_text(self.EMPTY_CART_MESSAGE).lower()

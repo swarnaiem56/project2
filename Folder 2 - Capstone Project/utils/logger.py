@@ -1,6 +1,9 @@
 import logging
 import os
 
+_PROJECT_ROOT = os.path.join(os.path.dirname(__file__), "..")
+_REPORTS_DIR = os.path.join(_PROJECT_ROOT, "reports")
+
 
 def get_logger(name: str) -> logging.Logger:
     logger = logging.getLogger(name)
@@ -8,9 +11,9 @@ def get_logger(name: str) -> logging.Logger:
         return logger  # avoid duplicate handlers on repeated calls
 
     logger.setLevel(logging.INFO)
-    os.makedirs("reports", exist_ok=True)
+    os.makedirs(_REPORTS_DIR, exist_ok=True)
 
-    file_handler = logging.FileHandler("reports/execution.log")
+    file_handler = logging.FileHandler(os.path.join(_REPORTS_DIR, "execution.log"))
     console_handler = logging.StreamHandler()
 
     formatter = logging.Formatter(

@@ -25,5 +25,10 @@ class DriverFactory:
         else:
             raise ValueError(f"Unsupported browser: {browser}")
 
-        driver.implicitly_wait(ConfigReader.get_implicit_wait())
+        # Deliberately NOT setting an implicit wait. Selenium's own docs
+        # warn against mixing implicit and explicit waits — it caused a
+        # real, subtle bug here: find_elements_immediate() is supposed to
+        # return instantly with zero matches, but a nonzero implicit wait
+        # silently made it block first, defeating the whole point of that
+        # method. Every wait in this framework is explicit (see BasePage).
         return driver

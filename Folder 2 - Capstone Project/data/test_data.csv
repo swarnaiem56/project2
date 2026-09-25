@@ -1,5 +1,7 @@
 search_term,expected_min_results
-MacBook,1
+MacBook,3
 iPhone,1
-Samsung,1
+Samsung,2
 Apple,1
+Sony,1
+zzzxxxnonexistentproduct123,0

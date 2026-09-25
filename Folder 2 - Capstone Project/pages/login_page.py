@@ -5,9 +5,6 @@ from utils.config_reader import ConfigReader
 
 
 class LoginPage(BasePage):
-    # Locators
-    MY_ACCOUNT_DROPDOWN = (By.CSS_SELECTOR, "a.dropdown-toggle[title='My Account']")
-    LOGIN_LINK = (By.LINK_TEXT, "Login")
     EMAIL_INPUT = (By.ID, "input-email")
     PASSWORD_INPUT = (By.ID, "input-password")
     LOGIN_BUTTON = (By.CSS_SELECTOR, "input[value='Login']")
@@ -20,9 +17,10 @@ class LoginPage(BasePage):
     LOGGED_IN_URL_MARKER = "route=account/account"
 
     def go_to_login(self):
-        self.open(ConfigReader.get_base_url())
-        self.click(self.MY_ACCOUNT_DROPDOWN)
-        self.click(self.LOGIN_LINK)
+        # Navigates directly to the login URL instead of clicking through
+        # the "My Account" dropdown menu. Same destination, one less
+        # unnecessary UI interaction (and one less thing that can flake).
+        self.open(ConfigReader.get_base_url() + "index.php?route=account/login")
 
     def login(self, email: str, password: str):
         self.type_text(self.EMAIL_INPUT, email)
@@ -33,9 +31,6 @@ class LoginPage(BasePage):
         return self.get_text(self.LOGIN_ERROR_ALERT)
 
     def is_logged_in(self) -> bool:
-        # Wait briefly for the post-login redirect to complete, then check
-        # the URL rather than relying on a heading that exists on both
-        # the success and failure pages.
         try:
             self.wait.until(lambda d: self.LOGGED_IN_URL_MARKER in d.current_url)
             return True

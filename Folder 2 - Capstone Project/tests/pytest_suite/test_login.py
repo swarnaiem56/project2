@@ -1,13 +1,18 @@
 """
-PyTest login tests — uses the shared `driver` fixture from conftest.py
-instead of manual setup/teardown, and demonstrates alert handling.
+PyTest login tests — uses the shared `driver` fixture from conftest.py.
+Invalid-login cases are CSV-driven via parametrize, same pattern as search.
 """
+
+import pytest
 
 from pages.login_page import LoginPage
 from utils.config_reader import ConfigReader
+from utils.csv_reader import load_csv_data
 from utils.logger import get_logger
 
 logger = get_logger(__name__)
+
+invalid_login_data = load_csv_data("login_data.csv")
 
 
 def test_login_page_loads(driver):
@@ -16,10 +21,15 @@ def test_login_page_loads(driver):
     assert "route=account/login" in driver.current_url
 
 
-def test_invalid_login_shows_error(driver):
+@pytest.mark.parametrize(
+    "row",
+    invalid_login_data,
+    ids=[row["email"] for row in invalid_login_data],
+)
+def test_invalid_login_shows_error(driver, row):
     login_page = LoginPage(driver)
     login_page.go_to_login()
-    login_page.login("invalid_user@example.com", "wrongpassword123")
+    login_page.login(row["email"], row["password"])
     assert "warning" in login_page.get_login_error().lower()
 
 
@@ -28,21 +38,4 @@ def test_valid_login(driver):
     login_page = LoginPage(driver)
     login_page.go_to_login()
     login_page.login(email, password)
-    # Replace credentials in config/config.ini with a real registered
-    # demo account for this assertion to pass.
     assert login_page.is_logged_in()
-
-
-def test_popup_alert_is_handled_gracefully(driver):
-    """
-    Demonstrates popup/alert handling requirement — navigates to the site
-    and ensures any unexpected JS alert (e.g. cookie/consent popups some
-    demo mirrors show) doesn't block execution.
-    """
-    login_page = LoginPage(driver)
-    login_page.open(ConfigReader.get_base_url())
-    alert_handled = login_page.accept_alert_if_present()
-    logger.info(f"Alert handled: {alert_handled}")
-    # No assertion failure either way — this just proves execution
-    # continues cleanly whether or not a popup appeared.
-    assert True

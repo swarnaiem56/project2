@@ -1,3 +1,4 @@
+from selenium.common.exceptions import StaleElementReferenceException
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
@@ -24,7 +25,16 @@ class BasePage:
 
     def __init__(self, driver):
         self.driver = driver
-        self.wait = WebDriverWait(driver, ConfigReader.get_explicit_wait())
+        # ignored_exceptions tells WebDriverWait to keep polling instead of
+        # crashing if an element goes stale mid-check (e.g. the page
+        # re-renders part of itself between one poll and the next) — without
+        # this, a StaleElementReferenceException during polling surfaces as
+        # a confusing failure instead of the wait simply trying again.
+        self.wait = WebDriverWait(
+            driver,
+            ConfigReader.get_explicit_wait(),
+            ignored_exceptions=[StaleElementReferenceException],
+        )
 
     def open(self, url: str):
         logger.info(f"Navigating to {url}")
@@ -80,13 +90,3 @@ class BasePage:
         already finished loading.
         """
         return self.driver.find_elements(*locator)
-
-    def accept_alert_if_present(self):
-        """Handles unexpected JS alerts/popups gracefully instead of letting them block execution."""
-        try:
-            alert = self.driver.switch_to.alert
-            logger.info(f"Alert detected: {alert.text}")
-            alert.accept()
-            return True
-        except Exception:
-            return False

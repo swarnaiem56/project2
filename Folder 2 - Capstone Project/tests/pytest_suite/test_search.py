@@ -1,12 +1,14 @@
 """
 PyTest search tests — data-driven via CSV using @pytest.mark.parametrize.
-This is the clearest demonstration of "same test logic, many data sets."
+One row in the CSV covers a genuine zero-result case, so this single
+parametrized test demonstrates both outcomes instead of splitting the
+zero-result case into a separate hardcoded test.
 """
 
 import pytest
 
 from pages.search_page import SearchPage
-from .conftest import load_csv_data
+from utils.csv_reader import load_csv_data
 
 search_data = load_csv_data("test_data.csv")
 
@@ -20,13 +22,17 @@ def test_search_data_driven(driver, row):
     search_page = SearchPage(driver)
     search_page.search_product(row["search_term"])
     result_count = search_page.get_result_count()
-    assert result_count >= int(row["expected_min_results"]), (
-        f"Expected at least {row['expected_min_results']} results for "
-        f"'{row['search_term']}', got {result_count}"
-    )
+    expected_min = int(row["expected_min_results"])
 
-
-def test_search_no_results_for_gibberish(driver):
-    search_page = SearchPage(driver)
-    search_page.search_product("zzzxxxnonexistentproduct123")
-    assert search_page.get_result_count() == 0
+    if expected_min == 0:
+        # A minimum of 0 is meaningless with >= (always true), so a
+        # genuine zero-result row needs an exact-match assertion instead.
+        assert result_count == 0, (
+            f"Expected zero results for '{row['search_term']}', "
+            f"got {result_count}"
+        )
+    else:
+        assert result_count >= expected_min, (
+            f"Expected at least {expected_min} results for "
+            f"'{row['search_term']}', got {result_count}"
+        )

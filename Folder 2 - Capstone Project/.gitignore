@@ -8,3 +8,4 @@ reports/allure-results/
 .vscode/
 *.log
 .env
+reports/screenshots/

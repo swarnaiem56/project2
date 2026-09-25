@@ -101,3 +101,12 @@ allure serve reports/allure-results
 - Target application: `https://tutorialsninja.com/demo/` (public OpenCart demo — no real credentials/data used)
 - API suite target: `https://jsonplaceholder.typicode.com/` (public fake REST API)
 - This is a portfolio/learning project; no real user data or credentials are involved.
+
+
+---
+
+
+## Known Limitations
+
+- `test_valid_login` depends on a real registered account existing on a shared public demo site, which could be reset without notice. Not auto-registering a fresh account in a fixture was a deliberate time tradeoff, not an oversight.
+- Screenshot-on-failure in the Unittest suite relies on `TestCase._outcome`, a private/internal unittest attribute. It's verified working on the Python version this was tested on, but being a private API, it isn't guaranteed stable across all future Python versions the way the PyTest suite's public hook-based approach is.

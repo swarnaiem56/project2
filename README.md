@@ -1,4 +1,8 @@
-# [Your Name] — Individual Course Repository
+# Swarnendu Boral— Individual Course Repository
+ROLL NUMBER:-- 10
+ENROLLMENT NUMBER:-- 12023052020011
+SECTION:--CSE(AI)
+COLLEGE:-- IEM(SALT LAKE)
 
 This repository is organized as required by the course, into three folders:
 
@@ -13,6 +17,5 @@ All certificates earned through the prescribed courses.
 
 ---
 
-**Student Name:** [Your Name]
-**Course:** [Course Name]
-**Submission Date:** [Date]
+Student Nmae:Swarnendu Boral
+Submission Date:
